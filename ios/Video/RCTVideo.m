@@ -750,9 +750,11 @@ static int const RCTVideoUnset = -1;
         // Playback is resuming, apply rate modifer.
         [_player setRate:_rate];
       } else {
-        if(_player.rate == 0 && _rate > 0 && !_controls && !_paused && _repeat) {
+        if(_player.rate == 0 && _rate > 0 && !_controls && !_paused && _repeat
+           && _selectedAudioTrack != nil && [_selectedAudioTrack[@"type"] isEqualToString:@"disabled"]) {
           dispatch_async(dispatch_get_main_queue(), ^{
-            if(_player != nil && _player.rate == 0 && _rate > 0 && !_controls && !_paused && _repeat) {
+            if(_player != nil && _player.rate == 0 && _rate > 0 && !_controls && !_paused && _repeat
+               && _selectedAudioTrack != nil && [_selectedAudioTrack[@"type"] isEqualToString:@"disabled"]) {
               [self->_player play];
             }
           });
