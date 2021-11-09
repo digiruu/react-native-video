@@ -749,16 +749,25 @@ static int const RCTVideoUnset = -1;
       if (_player.rate > 0 && _rate > 0 && _player.rate != _rate) {
         // Playback is resuming, apply rate modifer.
         [_player setRate:_rate];
-      } else if(self.onPlaybackRateChange) {
-        self.onPlaybackRateChange(@{@"playbackRate": [NSNumber numberWithFloat:_player.rate],
-                                    @"target": self.reactTag});
-      }
-      if(_playbackStalled && _player.rate > 0) {
-        if(self.onPlaybackResume) {
-          self.onPlaybackResume(@{@"playbackRate": [NSNumber numberWithFloat:_player.rate],
-                                  @"target": self.reactTag});
+      } else {
+        if(_player.rate == 0 && _rate > 0 && !_controls && !_paused && _repeat) {
+          dispatch_async(dispatch_get_main_queue(), ^{
+            if(_player != nil && _player.rate == 0 && _rate > 0 && !_controls && !_paused && _repeat) {
+              [self->_player play];
+            }
+          });
         }
-        _playbackStalled = NO;
+        if(self.onPlaybackRateChange) {
+          self.onPlaybackRateChange(@{@"playbackRate": [NSNumber numberWithFloat:_player.rate],
+                                      @"target": self.reactTag});
+        }
+        if(_playbackStalled && _player.rate > 0) {
+          if(self.onPlaybackResume) {
+            self.onPlaybackResume(@{@"playbackRate": [NSNumber numberWithFloat:_player.rate],
+                                    @"target": self.reactTag});
+          }
+          _playbackStalled = NO;
+        }
       }
     }
     else if([keyPath isEqualToString:externalPlaybackActive]) {
@@ -1655,6 +1664,7 @@ static int const RCTVideoUnset = -1;
     [_player removeObserver:self forKeyPath:externalPlaybackActive context:nil];
     _isExternalPlaybackActiveObserverRegistered = NO;
   }
+  _player = nil;
   
   [self removePlayerLayer];
   
