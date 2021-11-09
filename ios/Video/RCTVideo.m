@@ -97,7 +97,7 @@ static int const RCTVideoUnset = -1;
 {
   if ((self = [super init])) {
     _eventDispatcher = eventDispatcher;
-	  _automaticallyWaitsToMinimizeStalling = YES;
+    _automaticallyWaitsToMinimizeStalling = YES;
     _playbackRateObserverRegistered = NO;
     _isExternalPlaybackActiveObserverRegistered = NO;
     _playbackStalled = NO;
@@ -149,11 +149,6 @@ static int const RCTVideoUnset = -1;
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(audioRouteChanged:)
                                                  name:AVAudioSessionRouteChangeNotification
-                                               object:nil];
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(onAudioInterruption:)
-                                                 name:AVAudioSessionInterruptionNotification
                                                object:nil];
   }
   
@@ -260,13 +255,7 @@ static int const RCTVideoUnset = -1;
 }
 
 -(void)applicationDidBecomeActive:(NSNotification*)notification {
-  if(!_playInBackground && !_paused && _player != nil) {
-    [_player play];
-  }
-}
-
--(void)onAudioInterruption:(NSNotification*)notification {
-  if(_player != nil && !_controls && !_paused && _selectedAudioTrack != nil && [_selectedAudioTrack[@"type"] isEqualToString:@"disabled"]) {
+  if(!_playInBackground && !_controls && !_paused && _player != nil) {
     [_player play];
   }
 }
@@ -406,11 +395,16 @@ static int const RCTVideoUnset = -1;
       
       if(self->_player == nil) {
         self->_player = [AVPlayer playerWithPlayerItem:self->_playerItem];
-        [self applyModifiers];
       } else {
         [self->_player replaceCurrentItemWithPlayerItem:self->_playerItem];
-        [self applyModifiers];
       }
+      if(_muted) {
+        self->_player.muted = YES;
+      }
+      if(self->_selectedAudioTrack != nil) {
+        [self setSelectedAudioTrack:self->_selectedAudioTrack];
+      }
+      
       self->_player.actionAtItemEnd = AVPlayerActionAtItemEndNone;
       
       [self->_player addObserver:self forKeyPath:playbackRate options:0 context:nil];
@@ -1076,8 +1070,8 @@ static int const RCTVideoUnset = -1;
 
 - (void)setAutomaticallyWaitsToMinimizeStalling:(BOOL)waits
 {
-	_automaticallyWaitsToMinimizeStalling = waits;
-	_player.automaticallyWaitsToMinimizeStalling = waits;
+  _automaticallyWaitsToMinimizeStalling = waits;
+  _player.automaticallyWaitsToMinimizeStalling = waits;
 }
 
 
