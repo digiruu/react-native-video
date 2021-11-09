@@ -150,6 +150,11 @@ static int const RCTVideoUnset = -1;
                                              selector:@selector(audioRouteChanged:)
                                                  name:AVAudioSessionRouteChangeNotification
                                                object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(onAudioInterruption:)
+                                                 name:AVAudioSessionInterruptionNotification
+                                               object:nil];
   }
   
   return self;
@@ -256,6 +261,12 @@ static int const RCTVideoUnset = -1;
 
 -(void)applicationDidBecomeActive:(NSNotification*)notification {
   if(!_playInBackground && !_paused && _player != nil) {
+    [_player play];
+  }
+}
+
+-(void)onAudioInterruption:(NSNotification*)notification {
+  if(_player != nil && !_paused && _selectedAudioTrack != nil && [_selectedAudioTrack[@"type"] isEqualToString:@"disabled"]) {
     [_player play];
   }
 }
